@@ -32,7 +32,7 @@ def run(opts)
     # define some defaults for our app
     server  = opts[:server] || 'thin'
     host    = opts[:host]   || '0.0.0.0'
-    port    = opts[:port]   || '3000'
+    port    = opts[:port]   || '9292'
     web_app = opts[:app]
 
     # create a base-mapping that our application will set at. If I

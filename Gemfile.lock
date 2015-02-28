@@ -123,6 +123,7 @@ DEPENDENCIES
   eventmachine
   faye
   json
+  rack
   sinatra
   sinatra-contrib
   thin
