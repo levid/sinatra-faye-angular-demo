@@ -15,10 +15,6 @@ Sample backend server using a [Sinatra](http://www.sinatrarb.com/) app to show h
 ## Frontend
 Javascript sample based on [AngularJS](angularjs.org) and [Faye's client side library](http://faye.jcoglan.com/browser.html)
 
-## Usage
-Clone the repo and run it with:
-> bundle exec ruby app.rb
-
 Instructions
 ============
 
@@ -29,5 +25,11 @@ Instructions
   + faye-redis (from git not rubygems)
   + thin
   + json
-3. Run the Faye server on port 9001: rackup faye.ru -s thin -E production -p 9001
-4. Run the Sinatra server on IP 0.0.0.0: rackup config.ru -s thin -o 0.0.0.0
+  > bundle install
+
+## Usage
+Run the Faye server on port 9001: 
+> rackup faye.ru -s thin -E production -p 9001
+
+Run the Sinatra server on IP 0.0.0.0: 
+> rackup config.ru -s thin -o 0.0.0.0
