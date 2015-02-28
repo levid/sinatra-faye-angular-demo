@@ -1,6 +1,6 @@
 // Load THINGS data immediately
 // 
-var FayeServerURL = 'http://0.0.0.0:9001/faye'
+var FayeServerURL = 'https://desolate-anchorage-8775.herokuapp.com/faye'
 var app = angular.module('myApp', ['ngRoute']);
 
 app.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {

@@ -21,7 +21,7 @@ def run(opts)
   # Start he reactor
   EM.run do
 
-    $client = Faye::Client.new('http://0.0.0.0:9001/faye')
+    $client = Faye::Client.new('https://desolate-anchorage-8775.herokuapp.com/faye')
     puts $client
 
     $client.subscribe('/fromclient') do |message|
@@ -32,7 +32,7 @@ def run(opts)
     # define some defaults for our app
     server  = opts[:server] || 'thin'
     host    = opts[:host]   || '0.0.0.0'
-    port    = opts[:port]   || '9292'
+    port    = opts[:port]   || '8181'
     web_app = opts[:app]
 
     # create a base-mapping that our application will set at. If I
