@@ -14,12 +14,12 @@ def run(opts)
   # Start the reactor
   emthread = Thread.new {
     EM.run { 
-      $client = Faye::Client.new('https://desolate-anchorage-8775.herokuapp.com/faye')
+      @client = Faye::Client.new('https://desolate-anchorage-8775.herokuapp.com/faye')
       # puts $client
 
-      $client.subscribe('/fromclient') do |message|
+      @client.subscribe('/fromclient') do |message|
         puts message.inspect
-        $client.publish '/fromserver', "Received message: #{message}"
+        @client.publish '/fromserver', "Received message: #{message}"
       end
 
       # # define some defaults for our app
@@ -119,7 +119,7 @@ module FayeDemo
     post '/' do
       msg = JSON.parse(request.body.read)['message']
       puts "< %s" % msg
-      publication = $client.publish '/fromserver', "You asked me to send: #{msg}"
+      publication = @client.publish '/fromserver', "You asked me to send: #{msg}"
 
       publication.callback do
         puts 'Message received by server!!!!'
@@ -174,7 +174,7 @@ module FayeDemo
 
       get '/chart-data' do
         num_arr = (0..50).to_a.shuffle
-        $client.publish '/chart-data/update', num_arr.to_json
+        @client.publish '/chart-data/update', num_arr.to_json
       end
 
       # CREATE: Route to create a new Thing
@@ -194,7 +194,7 @@ module FayeDemo
         # @things = Thing.all(:order => :created_at.desc)
 
         if @thing.save
-          $client.publish '/things/new', @thing.to_json
+          @client.publish '/things/new', @thing.to_json
           # $client.publish '/things/all', @things.to_json
           @thing.to_json
         else
