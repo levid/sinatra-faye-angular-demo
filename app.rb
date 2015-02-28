@@ -1,6 +1,6 @@
 require 'faye'
 require 'eventmachine'
-require 'sinatra/base'
+require 'sinatra'
 require 'sinatra/namespace'
 require 'thin'
 require 'bcrypt'
