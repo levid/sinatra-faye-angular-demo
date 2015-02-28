@@ -1,9 +1,33 @@
-# Sinatra JSON API Example
+# Sinatra JSON API + Faye PubSub and Angular.js
 
-This is a very small example app showing how to accept and return JSON as an
-API. An app like this could serve as a back end for a mobile app or a
-[Backbone](http://backbonejs.org) app, or any other web interface that relies
-on AJAX requests to view and change data.
+## Overview
 
-If you're new to Sinatra I'd recommend starting with my [Sinatra Heroku
-Template](https://github.com/stevenklise/Sinatra-Heroku-Template) repository.
+This is a simple Sinatra application using Faye to communicate with an Angular.js client
+
+## Backend
+
+PubSub server with two entities:
+
+PubSub server [Faye](http://faye.jcoglan.com/) with a [Redis](http://redis.io/) server as backend.
+
+Sample backend server using a [Sinatra](http://www.sinatrarb.com/) app to show how messages can be received and sent from the server side.
+
+## Frontend
+Javascript sample based on [AngularJS](angularjs.org) and [Faye's client side library](http://faye.jcoglan.com/browser.html)
+
+## Usage
+Clone the repo and run it with:
+> bundle exec ruby app.rb
+
+Instructions
+============
+
+1. Clone the repository.
+2. Install the following gems:
+  + sinatra
+  + faye 
+  + faye-redis (from git not rubygems)
+  + thin
+  + json
+3. Run the Faye server on port 9001: rackup faye.ru -s thin -E production -p 9001
+4. Run the Sinatra server on IP 0.0.0.0: rackup config.ru -s thin -o 0.0.0.0
