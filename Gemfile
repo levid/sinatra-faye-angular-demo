@@ -4,12 +4,9 @@ gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'json'
 gem 'data_mapper'
-gem 'faye'
 gem 'puma'
-gem 'eventmachine'
-gem 'bcrypt'
-gem 'rack'
-gem 'heroku'
+gem "faye-websocket"
+gem "redis"
 
 # When developing an app locally you can use SQLite which is a relational
 # database stored in a file. It's easy to set up and just fine for most

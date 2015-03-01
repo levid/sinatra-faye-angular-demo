@@ -93,9 +93,9 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr ng-repeat='msg in messages'>
-                    <th class="{{msg.direction}}">[{{msg.direction}}]</th>
-                    <td>{{msg.text}}</td>
+                  <tr ng-repeat='data in DataService.collection track by $index'>
+                    <th class="{{data.direction}}">[{{data.direction}}]</th>
+                    <td>{{data.message}}</td>
                   </tr>
                 </tbody>
               </table>
@@ -154,6 +154,7 @@
   <script type="text/javascript" src="faye-browser.js"> </script> 
   <script src="angular.min.js"></script>
   <script src="angular-route.min.js"></script>
+  <script src="angular-websocket.js"></script>
   <script type="text/javascript" src="client.js"> </script> 
 
   <!-- Load d3.js and c3.js -->

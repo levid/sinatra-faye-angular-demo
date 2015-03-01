@@ -1,7 +1,8 @@
 // Load THINGS data immediately
 // 
 var FayeServerURL = 'https://desolate-anchorage-8775.herokuapp.com/faye'
-var app = angular.module('myApp', ['ngRoute']);
+var app = angular.module('myApp', ['ngRoute', 'ngWebSocket']);
+
 
 app.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
   $locationProvider.html5Mode(true);
@@ -14,74 +15,75 @@ app.run(['$rootScope', function($rootScope) {
 }]);
 
 // Simple Faye service
-app.factory('Faye', ['$rootScope', function($rootScope) {
-  var client = new Faye.Client(FayeServerURL, {timeout: 120});
-  client.disable('websocket');
+app.factory('DataService', ['$rootScope', '$websocket', function($rootScope, $websocket) {
+  // Open a WebSocket connection
+  var dataStream = $websocket('ws://' + window.document.location.host + '/');
+  var collection = [];
 
-  return {
-    publish: function(channel, message, callback) {
-      var publication = client.publish(channel, message);
+  dataStream.onMessage(function(message) {
+    collection.push(JSON.parse(message.data));
+  });
 
-      publication.then(function(msg) {
-        console.log('Message received by server!');
-      }, function(error) {
-        console.log('There was a problem: ' + error.message);
-      });
-      // return client;
+  var methods = {
+    collection: collection,
+    get: function() {
+      dataStream.send(JSON.stringify({ action: 'get' }));
     },
-
-    subscribe: function(channel, callback) {
-      client.subscribe(channel, callback);
-      // return client;
+    send: function(data){
+      dataStream.send(data);
     }
-  }
+  };
+
+  return methods;
 }]);
 
-app.controller('FayeCtrl', ['$scope', '$http', 'Faye', '$timeout', '$interval', '$q', function($scope, $http, Faye, $timeout, $interval, $q) {
+app.controller('FayeCtrl', ['$scope', '$http', 'DataService', '$timeout', '$interval', '$q', function($scope, $http, DataService, $timeout, $interval, $q) {
   $scope.messages = [];
   $scope.things = [];
+  $scope.DataService = DataService;
 
   $scope.messages.add = function(direction, message) {
     this.push( { direction: direction, text: message });
   }
     
-  // Listen to data coming from the server via Faye
-  Faye.subscribe('/fromserver', function(msg) {
-    $scope.$apply(function() {
-      $scope.messages.add('incoming', msg);
-    });
-  });
+  // // Listen to data coming from the server via Faye
+  // Faye.subscribe('/fromserver', function(msg) {
+  //   $scope.$apply(function() {
+  //     $scope.messages.add('incoming', msg);
+  //   });
+  // });
 
-  Faye.subscribe('/fromclient', function(msg) {
-    $scope.$apply(function() {
-      $scope.messages.add('outgoing', msg);
-    });
-  });
+  // Faye.subscribe('/fromclient', function(msg) {
+  //   $scope.$apply(function() {
+  //     $scope.messages.add('outgoing', msg);
+  //   });
+  // });
 
-  Faye.subscribe('/things/new', function(res) {
-    var res = JSON.parse(res);
-    $scope.things.unshift(res);
-  });
+  // Faye.subscribe('/things/new', function(res) {
+  //   var res = JSON.parse(res);
+  //   $scope.things.unshift(res);
+  // });
 
-  Faye.subscribe('/things/all', function(res) {
-    var data = JSON.parse(res);
-    data.forEach(function (d) {
-      console.log(d);
-      $('#things-index').append("<p><strong>" + d.title + "</strong>: " + d.description + "</p>");
-    });
-  });
+  // Faye.subscribe('/things/all', function(res) {
+  //   var data = JSON.parse(res);
+  //   data.forEach(function (d) {
+  //     console.log(d);
+  //     $('#things-index').append("<p><strong>" + d.title + "</strong>: " + d.description + "</p>");
+  //   });
+  // });
 
   // Send data to server via Faye
   $scope.sendClient = function() {
-    Faye.publish('/fromclient', $scope.message);
+    DataService.send({ direction: 'outgoing', message: $scope.message });
     // $scope.messages.add('outgoing', $scope.message);
     $scope.message = '';
   };
 
   // Post the data to the server and have it send to us
   $scope.sendServer = function() {
-    $http.post('/', { foo: 'asd', message: $scope.message })
-      .success(function() {
+    $http.post('/', { foo: 'asd', direction: 'incoming', message: $scope.message })
+      .success(function(res) {
+        DataService.collection.push(res);
         $scope.message = '';
       })
       .error(function(data, status) {
@@ -102,7 +104,7 @@ app.controller('FayeCtrl', ['$scope', '$http', 'Faye', '$timeout', '$interval', 
   $scope.createThing = function(){
     $http.post('api/things', { title: $scope.title, description: $scope.description })
       .success(function(res) {
-        // $scope.things.unshift(res);
+        $scope.things.unshift(res);
       })
       .error(function(data, status) {
         alert(status);
@@ -128,28 +130,32 @@ app.controller('FayeCtrl', ['$scope', '$http', 'Faye', '$timeout', '$interval', 
     // $.shuffle(data);
     // data.unshift('things2');
 
-    $http.get('api/chart-data')
-
-    // $scope.chart.load({
-    //   columns: [
-    //     data
-    //   ],
-    //   unload: ['things']
-    // });
+    $http.get('api/chart-data').success(function(data) {
+      data.unshift('things2');
+      $scope.chart.load({
+        columns: [
+          data
+        ],
+        unload: ['things']
+      });
+    })
+    .error(function(data, status) {
+      alert(status);
+    });
   };
 
   // Listen to data coming from the server via Faye
-  Faye.subscribe('/chart-data/update', function(msg) {
-    var data = JSON.parse(msg);
-    // console.log(data);
-    data.unshift('things2');
-    $scope.chart.load({
-      columns: [
-        data
-      ],
-      unload: ['things']
-    });
-  });
+  // Faye.subscribe('/chart-data/update', function(msg) {
+  //   var data = JSON.parse(msg);
+  //   // console.log(data);
+  //   data.unshift('things2');
+  //   $scope.chart.load({
+  //     columns: [
+  //       data
+  //     ],
+  //     unload: ['things']
+  //   });
+  // });
 
   $scope.getThings();
   $scope.createChart();

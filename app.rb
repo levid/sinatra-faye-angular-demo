@@ -1,81 +1,15 @@
-require 'rubygems'
-require 'faye'
-require 'eventmachine'
+require 'data_mapper'
 require 'sinatra/base'
 require 'sinatra/namespace'
 
+# Our simple hello-world app
+module IcueDemo
+  class App < Sinatra::Base
 
-# This example shows you how to embed Sinatra into your EventMachine
-# application. This is very useful if you're application needs some
-# sort of API interface and you don't want to use EM's provided
-# web-server.
-# 
-# Start the reactor
-emthread = Thread.new {
-  EM.run { 
-    $client = Faye::Client.new('https://desolate-anchorage-8775.herokuapp.com/faye')
-    # puts $client
+    def initalize
 
-    $client.subscribe('/fromclient') do |message|
-      puts message.inspect
-      $client.publish '/fromserver', "Received message: #{message}"
     end
 
-    # # define some defaults for our app
-    # server  = opts[:server] || 'thin'
-    # host    = opts[:host]   || '0.0.0.0'
-    # port    = opts[:port]   || '8181'
-    # web_app = opts[:app]
-
-    # # create a base-mapping that our application will set at. If I
-    # # have the following routes:
-    # #
-    # #   get '/hello' do
-    # #     'hello!'
-    # #   end
-    # #
-    # #   get '/goodbye' do
-    # #     'see ya later!'
-    # #   end
-    # #
-    # # Then I will get the following:
-    # #
-    # #   mapping: '/'
-    # #   routes:
-    # #     /hello
-    # #     /goodbye
-    # #
-    # #   mapping: '/api'
-    # #   routes:
-    # #     /api/hello
-    # #     /api/goodbye
-    # dispatch = Rack::Builder.app do
-    #   map '/' do
-    #     run web_app
-    #   end
-    # end
-
-    # # NOTE that we have to use an EM-compatible web-server. There
-    # # might be more, but these are some that are currently available.
-    # unless ['thin', 'hatetepe', 'goliath'].include? server
-    #   raise "Need an EM webserver, but #{server} isn't"
-    # end
-
-    # # Start the web server. Note that you are free to run other tasks
-    # # within your EM instance.
-    # Rack::Server.start({
-    #   app:    dispatch,
-    #   server: server,
-    #   Host:   host,
-    #   Port:   port,
-    #   signals: false,
-    # })
-  }
-}
-
-# Our simple hello-world app
-module FayeDemo
-  class Api < Sinatra::Base
     register Sinatra::Namespace
     # threaded - False: Will take requests on the reactor thread
     #            True:  Will queue request for background thread
@@ -115,17 +49,19 @@ module FayeDemo
     end
 
     post '/' do
-      msg = JSON.parse(request.body.read)['message']
+      msg = JSON.parse(request.body.read)
       puts "< %s" % msg
-      publication = $client.publish '/fromserver', "You asked me to send: #{msg}"
+      msg.to_json
 
-      publication.callback do
-        puts 'Message received by server!!!!'
-      end
+      # DataService.send("You asked me to send: #{msg}")
 
-      publication.errback do |error|
-        puts 'There was a problem: ' + error.message
-      end
+      # publication.callback do
+      #   puts 'Message received by server!!!!'
+      # end
+
+      # publication.errback do |error|
+      #   puts 'There was a problem: ' + error.message
+      # end
 
       # bayeux.get_client.publish('/fromserver', {
       #   'text'      => 'New email has arrived!',
@@ -172,7 +108,8 @@ module FayeDemo
 
       get '/chart-data' do
         num_arr = (0..50).to_a.shuffle
-        $client.publish '/chart-data/update', num_arr.to_json
+        # $client.publish '/chart-data/update', num_arr.to_json
+        num_arr.to_json
       end
 
       # CREATE: Route to create a new Thing
@@ -192,7 +129,7 @@ module FayeDemo
         # @things = Thing.all(:order => :created_at.desc)
 
         if @thing.save
-          $client.publish '/things/new', @thing.to_json
+          # $client.publish '/things/new', @thing.to_json
           # $client.publish '/things/all', @things.to_json
           @thing.to_json
         else
